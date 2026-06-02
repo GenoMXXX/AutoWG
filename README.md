@@ -1,0 +1,2 @@
+# AutoWG
+wg-watchdog
