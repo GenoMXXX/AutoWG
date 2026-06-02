@@ -27,6 +27,8 @@ function fillForm(data) {
   $("tx").value = cfg.tx_threshold ?? 1024;
   $("poll").value = cfg.poll_interval ?? 30;
   $("cooldown").value = cfg.cooldown ?? 300;
+  $("bootDelay").value = cfg.boot_delay ?? 120;
+  $("restartDelay").value = cfg.restart_delay ?? 5;
   $("bind").value = cfg.http_bind ?? "0.0.0.0";
   $("httpPort").value = cfg.http_port ?? 18088;
 
@@ -101,6 +103,8 @@ async function saveConfig() {
   body.set("TX_THRESHOLD", $("tx").value || "1024");
   body.set("POLL_INTERVAL", $("poll").value || "30");
   body.set("COOLDOWN", $("cooldown").value || "300");
+  body.set("BOOT_DELAY", $("bootDelay").value || "120");
+  body.set("RESTART_DELAY", $("restartDelay").value || "5");
   body.set("HTTP_BIND", $("bind").value || "0.0.0.0");
   body.set("HTTP_PORT", $("httpPort").value || "18088");
 

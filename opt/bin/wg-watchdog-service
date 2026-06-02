@@ -1,0 +1,114 @@
+#!/bin/sh
+set -eu
+
+PATH=/opt/bin:/opt/sbin:/bin:/sbin
+
+# shellcheck disable=SC1091
+. /opt/lib/wg-watchdog.sh
+
+PID_FILE="${WG_PID_DIR}/wg-watchdog-service.pid"
+HTTPD_PID="${WG_PID_DIR}/wg-watchdog-httpd.pid"
+DAEMON_PID="${WG_PID_DIR}/wg-watchdog.pid"
+HTTPD_LOG=/opt/var/log/wg-watchdog-httpd.log
+DAEMON_LOG=/opt/var/log/wg-watchdog.log
+
+STOP_REQUEST=0
+
+cleanup() {
+    STOP_REQUEST=1
+    for pidfile in "$DAEMON_PID" "$HTTPD_PID"; do
+        if [ -r "$pidfile" ]; then
+            pid="$(cat "$pidfile" 2>/dev/null || printf '')"
+            [ -n "$pid" ] && kill "$pid" 2>/dev/null || true
+            rm -f "$pidfile"
+        fi
+    done
+    rm -f "$PID_FILE"
+    exit 0
+}
+
+trap cleanup INT TERM EXIT
+
+mkdir -p "$WG_PID_DIR" /opt/var/log
+echo $$ >"$PID_FILE"
+
+start_httpd() {
+    load_config
+    HTTP_BIND="${HTTP_BIND:-0.0.0.0}"
+    HTTP_PORT="${HTTP_PORT:-18088}"
+    WEB_ROOT="${WEB_ROOT:-/opt/share/wg-watchdog/www}"
+
+    if [ -r "$HTTPD_PID" ] && kill -0 "$(cat "$HTTPD_PID")" 2>/dev/null; then
+        return 0
+    fi
+
+    /opt/bin/busybox httpd -f -p "${HTTP_BIND}:${HTTP_PORT}" -h "$WEB_ROOT" >/dev/null 2>>"$HTTPD_LOG" &
+    echo $! >"$HTTPD_PID"
+}
+
+start_daemon() {
+    if [ -r "$DAEMON_PID" ] && kill -0 "$(cat "$DAEMON_PID")" 2>/dev/null; then
+        return 0
+    fi
+
+    /opt/bin/wg-watchdogd >/dev/null 2>>"$DAEMON_LOG" &
+    echo $! >"$DAEMON_PID"
+}
+
+start_delay() {
+    load_config
+    delay="${BOOT_DELAY:-0}"
+    case "$delay" in
+        ''|*[!0-9]*)
+            delay=0
+            ;;
+    esac
+    if [ "$delay" -gt 0 ]; then
+        sleep "$delay"
+    fi
+}
+
+main_loop() {
+    start_delay
+
+    while [ "$STOP_REQUEST" -eq 0 ]; do
+        load_config
+
+        if [ "${ENABLED:-1}" = "1" ]; then
+            start_httpd
+            start_daemon
+        else
+            if [ -r "$DAEMON_PID" ]; then
+                kill "$(cat "$DAEMON_PID")" 2>/dev/null || true
+                rm -f "$DAEMON_PID"
+            fi
+            if [ -r "$HTTPD_PID" ]; then
+                kill "$(cat "$HTTPD_PID")" 2>/dev/null || true
+                rm -f "$HTTPD_PID"
+            fi
+        fi
+
+        restart_delay="${RESTART_DELAY:-5}"
+        case "$restart_delay" in
+            ''|*[!0-9]*)
+                restart_delay=5
+                ;;
+        esac
+
+        if [ -r "$DAEMON_PID" ] && ! kill -0 "$(cat "$DAEMON_PID")" 2>/dev/null; then
+            rm -f "$DAEMON_PID"
+            [ "$STOP_REQUEST" -eq 0 ] && sleep "$restart_delay"
+            continue
+        fi
+
+        if [ -r "$HTTPD_PID" ] && ! kill -0 "$(cat "$HTTPD_PID")" 2>/dev/null; then
+            rm -f "$HTTPD_PID"
+            [ "$STOP_REQUEST" -eq 0 ] && sleep "$restart_delay"
+            continue
+        fi
+
+        sleep 2
+    done
+}
+
+main_loop

@@ -5,53 +5,34 @@ PATH=/opt/bin:/opt/sbin:/bin:/sbin
 
 PID_DIR=/opt/var/run
 CONF=/opt/etc/wg-watchdog.conf
-WEB_ROOT=/opt/share/wg-watchdog/www
-HTTPD_PID="$PID_DIR/wg-watchdog-httpd.pid"
-DAEMON_PID="$PID_DIR/wg-watchdog.pid"
-HTTPD_LOG=/opt/var/log/wg-watchdog-httpd.log
-DAEMON_LOG=/opt/var/log/wg-watchdog.log
+SERVICE_PID="$PID_DIR/wg-watchdog-service.pid"
 
 mkdir -p "$PID_DIR" /opt/var/log
 
-start_httpd() {
-    if [ -r "$HTTPD_PID" ] && kill -0 "$(cat "$HTTPD_PID")" 2>/dev/null; then
-        return 0
-    fi
-    # shellcheck disable=SC1091
-    . "$CONF" 2>/dev/null || true
-    HTTP_BIND="${HTTP_BIND:-0.0.0.0}"
-    HTTP_PORT="${HTTP_PORT:-18088}"
-    WEB_ROOT="${WEB_ROOT:-/opt/share/wg-watchdog/www}"
-    /opt/bin/busybox httpd -f -p "${HTTP_BIND}:${HTTP_PORT}" -h "$WEB_ROOT" >/dev/null 2>>"$HTTPD_LOG" &
-    echo $! >"$HTTPD_PID"
-}
-
-start_daemon() {
-    if [ -r "$DAEMON_PID" ] && kill -0 "$(cat "$DAEMON_PID")" 2>/dev/null; then
-        return 0
-    fi
-    /opt/bin/wg-watchdogd >/dev/null 2>>"$DAEMON_LOG" &
-    echo $! >"$DAEMON_PID"
+is_running() {
+    [ -r "$1" ] && kill -0 "$(cat "$1")" 2>/dev/null
 }
 
 stop_pidfile() {
     file="$1"
-    if [ -r "$file" ]; then
-        pid="$(cat "$file")"
-        kill "$pid" 2>/dev/null || true
-        rm -f "$file"
-    fi
+    is_running "$file" || { rm -f "$file"; return 0; }
+    pid="$(cat "$file")"
+    kill "$pid" 2>/dev/null || true
+    rm -f "$file"
 }
 
 case "${1:-start}" in
     start)
         [ -f "$CONF" ] || cp /opt/etc/wg-watchdog.conf.sample "$CONF"
-        start_httpd
-        start_daemon
+        if ! is_running "$SERVICE_PID"; then
+            /opt/bin/wg-watchdog-service >/dev/null 2>&1 &
+            echo $! >"$SERVICE_PID"
+        fi
         ;;
     stop)
-        stop_pidfile "$DAEMON_PID"
-        stop_pidfile "$HTTPD_PID"
+        stop_pidfile "$SERVICE_PID"
+        stop_pidfile "$PID_DIR/wg-watchdog.pid"
+        stop_pidfile "$PID_DIR/wg-watchdog-httpd.pid"
         ;;
     restart)
         "$0" stop
@@ -59,12 +40,17 @@ case "${1:-start}" in
         "$0" start
         ;;
     status)
-        if [ -r "$DAEMON_PID" ] && kill -0 "$(cat "$DAEMON_PID")" 2>/dev/null; then
+        if is_running "$SERVICE_PID"; then
+            echo "service running"
+        else
+            echo "service stopped"
+        fi
+        if [ -r "$PID_DIR/wg-watchdog.pid" ] && kill -0 "$(cat "$PID_DIR/wg-watchdog.pid")" 2>/dev/null; then
             echo "daemon running"
         else
             echo "daemon stopped"
         fi
-        if [ -r "$HTTPD_PID" ] && kill -0 "$(cat "$HTTPD_PID")" 2>/dev/null; then
+        if [ -r "$PID_DIR/wg-watchdog-httpd.pid" ] && kill -0 "$(cat "$PID_DIR/wg-watchdog-httpd.pid")" 2>/dev/null; then
             echo "httpd running"
         else
             echo "httpd stopped"
@@ -77,4 +63,3 @@ case "${1:-start}" in
 esac
 
 exit 0
-

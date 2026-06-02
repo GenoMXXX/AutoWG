@@ -63,6 +63,8 @@ payload() {
     "tx_threshold": $(printf '%s' "${TX_THRESHOLD:-1024}"),
     "poll_interval": $(printf '%s' "${POLL_INTERVAL:-30}"),
     "cooldown": $(printf '%s' "${COOLDOWN:-300}"),
+    "boot_delay": $(printf '%s' "${BOOT_DELAY:-120}"),
+    "restart_delay": $(printf '%s' "${RESTART_DELAY:-5}"),
     "http_bind": "$(json_escape "${HTTP_BIND:-0.0.0.0}")",
     "http_port": $(printf '%s' "${HTTP_PORT:-18088}"),
     "web_root": "$(json_escape "${WEB_ROOT:-/opt/share/wg-watchdog/www}")"
@@ -115,6 +117,8 @@ case "$action" in
         tx="$(form_get TX_THRESHOLD "$body" || true)"
         poll="$(form_get POLL_INTERVAL "$body" || true)"
         cooldown="$(form_get COOLDOWN "$body" || true)"
+        boot_delay="$(form_get BOOT_DELAY "$body" || true)"
+        restart_delay="$(form_get RESTART_DELAY "$body" || true)"
         bind="$(form_get HTTP_BIND "$body" || true)"
         port="$(form_get HTTP_PORT "$body" || true)"
         [ -n "$iface" ] && WG_INTERFACE="$iface"
@@ -122,6 +126,8 @@ case "$action" in
         [ -n "$tx" ] && TX_THRESHOLD="$tx"
         [ -n "$poll" ] && POLL_INTERVAL="$poll"
         [ -n "$cooldown" ] && COOLDOWN="$cooldown"
+        [ -n "$boot_delay" ] && BOOT_DELAY="$boot_delay"
+        [ -n "$restart_delay" ] && RESTART_DELAY="$restart_delay"
         [ -n "$bind" ] && HTTP_BIND="$bind"
         [ -n "$port" ] && HTTP_PORT="$port"
         save_config
@@ -131,4 +137,3 @@ case "$action" in
         emit_json "$(payload)"
         ;;
 esac
-

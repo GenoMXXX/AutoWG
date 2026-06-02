@@ -15,8 +15,8 @@ if [ ! -f "$CONF_FILE" ] && [ -f "$DEFAULT_FILE" ]; then
 fi
 
 chmod 0755 /opt/bin/wg-watchdogd || true
+chmod 0755 /opt/bin/wg-watchdog-service || true
 chmod 0755 "$INIT_DIR/S99wg-watchdog" || true
 chmod 0755 "$WWW_DIR/cgi-bin/api.cgi" || true
 
 exit 0
-

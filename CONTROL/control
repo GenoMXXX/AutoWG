@@ -10,4 +10,5 @@ Source: local
 Description: Keenetic WireGuard watchdog with local web UI
  Monitors a selected Linux WireGuard interface from sysfs and bounces it when
  rxbytes stays at zero while txbytes exceeds the configured threshold. Includes
- a local web UI served from Entware and a CGI API for status and configuration.
+ a local web UI served from Entware, automatic service supervision, and a CGI
+ API for status and configuration.

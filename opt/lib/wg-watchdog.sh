@@ -15,6 +15,8 @@ load_config() {
     TX_THRESHOLD=1024
     POLL_INTERVAL=30
     COOLDOWN=300
+    BOOT_DELAY=120
+    RESTART_DELAY=5
     HTTP_BIND=0.0.0.0
     HTTP_PORT=18088
     WEB_ROOT=/opt/share/wg-watchdog/www
@@ -34,6 +36,8 @@ save_config() {
         printf 'TX_THRESHOLD=%s\n' "${TX_THRESHOLD:-1024}"
         printf 'POLL_INTERVAL=%s\n' "${POLL_INTERVAL:-30}"
         printf 'COOLDOWN=%s\n' "${COOLDOWN:-300}"
+        printf 'BOOT_DELAY=%s\n' "${BOOT_DELAY:-120}"
+        printf 'RESTART_DELAY=%s\n' "${RESTART_DELAY:-5}"
         printf 'HTTP_BIND=%s\n' "${HTTP_BIND:-0.0.0.0}"
         printf 'HTTP_PORT=%s\n' "${HTTP_PORT:-18088}"
         printf 'WEB_ROOT=%s\n' "${WEB_ROOT:-/opt/share/wg-watchdog/www}"
@@ -122,4 +126,3 @@ bounce_interface() {
     sleep 2
     ip link set dev "$iface" up >/dev/null 2>&1 || return 1
 }
-
