@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WG Watchdog</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Keenetic Entware package</div>
+        <h1>WireGuard Watchdog</h1>
+        <p>Monitor a chosen WireGuard interface and bounce it when inbound traffic stays at zero while outbound traffic crosses the threshold.</p>
+      </div>
+      <div class="badge" id="serviceBadge">Loading</div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Control</h2>
+        <div class="muted" id="lastUpdate">Waiting for router...</div>
+      </div>
+
+      <form id="cfgForm" class="grid">
+        <label>
+          <span>Enabled</span>
+          <input type="checkbox" name="ENABLED" id="enabled">
+        </label>
+
+        <label>
+          <span>Interface</span>
+          <select name="WG_INTERFACE" id="iface"></select>
+        </label>
+
+        <label>
+          <span>RX threshold</span>
+          <input type="number" name="RX_THRESHOLD" id="rx" min="0" step="1">
+        </label>
+
+        <label>
+          <span>TX threshold</span>
+          <input type="number" name="TX_THRESHOLD" id="tx" min="0" step="1">
+        </label>
+
+        <label>
+          <span>Poll interval, s</span>
+          <input type="number" name="POLL_INTERVAL" id="poll" min="5" step="1">
+        </label>
+
+        <label>
+          <span>Cooldown, s</span>
+          <input type="number" name="COOLDOWN" id="cooldown" min="5" step="1">
+        </label>
+
+        <label>
+          <span>HTTP bind</span>
+          <input type="text" name="HTTP_BIND" id="bind">
+        </label>
+
+        <label>
+          <span>HTTP port</span>
+          <input type="number" name="HTTP_PORT" id="httpPort" min="1" step="1">
+        </label>
+      </form>
+
+      <div class="actions">
+        <button id="saveBtn">Save</button>
+        <button id="toggleBtn" type="button">Toggle</button>
+        <button id="bounceBtn" type="button">Bounce now</button>
+        <button id="reloadBtn" type="button">Refresh</button>
+      </div>
+    </section>
+
+    <section class="stats">
+      <article>
+        <span>RX bytes</span>
+        <strong id="rxValue">-</strong>
+      </article>
+      <article>
+        <span>TX bytes</span>
+        <strong id="txValue">-</strong>
+      </article>
+      <article>
+        <span>Last handshake</span>
+        <strong id="handshake">-</strong>
+      </article>
+      <article>
+        <span>Interface state</span>
+        <strong id="ifaceState">-</strong>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Interfaces</h2>
+        <div class="muted">Selected from the router's live interface list</div>
+      </div>
+      <div id="ifaceList" class="chips"></div>
+    </section>
+
+    <pre id="errorBox" class="error hidden"></pre>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

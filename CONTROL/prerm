@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+
+if [ -x /opt/etc/init.d/S99wg-watchdog ]; then
+    /opt/etc/init.d/S99wg-watchdog stop >/dev/null 2>&1 || true
+fi
+
+exit 0
+

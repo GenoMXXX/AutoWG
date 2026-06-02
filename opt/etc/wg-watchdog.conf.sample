@@ -1,0 +1,20 @@
+# Keenetic WireGuard watchdog configuration
+
+# Enable or disable the watchdog logic.
+ENABLED=1
+
+# Interface to monitor from /sys/class/net.
+WG_INTERFACE=nwg0
+
+# Trigger condition.
+RX_THRESHOLD=0
+TX_THRESHOLD=1024
+
+# Polling and cooldown.
+POLL_INTERVAL=30
+COOLDOWN=300
+
+# Web UI.
+HTTP_BIND=0.0.0.0
+HTTP_PORT=18088
+WEB_ROOT=/opt/share/wg-watchdog/www

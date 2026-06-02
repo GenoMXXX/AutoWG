@@ -1,0 +1,80 @@
+#!/bin/sh
+set -eu
+
+PATH=/opt/bin:/opt/sbin:/bin:/sbin
+
+PID_DIR=/opt/var/run
+CONF=/opt/etc/wg-watchdog.conf
+WEB_ROOT=/opt/share/wg-watchdog/www
+HTTPD_PID="$PID_DIR/wg-watchdog-httpd.pid"
+DAEMON_PID="$PID_DIR/wg-watchdog.pid"
+HTTPD_LOG=/opt/var/log/wg-watchdog-httpd.log
+DAEMON_LOG=/opt/var/log/wg-watchdog.log
+
+mkdir -p "$PID_DIR" /opt/var/log
+
+start_httpd() {
+    if [ -r "$HTTPD_PID" ] && kill -0 "$(cat "$HTTPD_PID")" 2>/dev/null; then
+        return 0
+    fi
+    # shellcheck disable=SC1091
+    . "$CONF" 2>/dev/null || true
+    HTTP_BIND="${HTTP_BIND:-0.0.0.0}"
+    HTTP_PORT="${HTTP_PORT:-18088}"
+    WEB_ROOT="${WEB_ROOT:-/opt/share/wg-watchdog/www}"
+    /opt/bin/busybox httpd -f -p "${HTTP_BIND}:${HTTP_PORT}" -h "$WEB_ROOT" >/dev/null 2>>"$HTTPD_LOG" &
+    echo $! >"$HTTPD_PID"
+}
+
+start_daemon() {
+    if [ -r "$DAEMON_PID" ] && kill -0 "$(cat "$DAEMON_PID")" 2>/dev/null; then
+        return 0
+    fi
+    /opt/bin/wg-watchdogd >/dev/null 2>>"$DAEMON_LOG" &
+    echo $! >"$DAEMON_PID"
+}
+
+stop_pidfile() {
+    file="$1"
+    if [ -r "$file" ]; then
+        pid="$(cat "$file")"
+        kill "$pid" 2>/dev/null || true
+        rm -f "$file"
+    fi
+}
+
+case "${1:-start}" in
+    start)
+        [ -f "$CONF" ] || cp /opt/etc/wg-watchdog.conf.sample "$CONF"
+        start_httpd
+        start_daemon
+        ;;
+    stop)
+        stop_pidfile "$DAEMON_PID"
+        stop_pidfile "$HTTPD_PID"
+        ;;
+    restart)
+        "$0" stop
+        sleep 1
+        "$0" start
+        ;;
+    status)
+        if [ -r "$DAEMON_PID" ] && kill -0 "$(cat "$DAEMON_PID")" 2>/dev/null; then
+            echo "daemon running"
+        else
+            echo "daemon stopped"
+        fi
+        if [ -r "$HTTPD_PID" ] && kill -0 "$(cat "$HTTPD_PID")" 2>/dev/null; then
+            echo "httpd running"
+        else
+            echo "httpd stopped"
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0
+

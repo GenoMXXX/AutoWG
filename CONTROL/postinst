@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+CONF_DIR="/opt/etc"
+CONF_FILE="${CONF_DIR}/wg-watchdog.conf"
+DEFAULT_FILE="${CONF_DIR}/wg-watchdog.conf.sample"
+INIT_DIR="/opt/etc/init.d"
+WWW_DIR="/opt/share/wg-watchdog/www"
+PID_DIR="/opt/var/run"
+
+mkdir -p "$CONF_DIR" "$INIT_DIR" "$WWW_DIR/cgi-bin" "$PID_DIR"
+
+if [ ! -f "$CONF_FILE" ] && [ -f "$DEFAULT_FILE" ]; then
+    cp "$DEFAULT_FILE" "$CONF_FILE"
+fi
+
+chmod 0755 /opt/bin/wg-watchdogd || true
+chmod 0755 "$INIT_DIR/S99wg-watchdog" || true
+chmod 0755 "$WWW_DIR/cgi-bin/api.cgi" || true
+
+exit 0
+
