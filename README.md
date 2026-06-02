@@ -1,99 +1,46 @@
 # wg-watchdog
 
-## Назначение
+Локальный `opkg`-пакет для Keenetic с Entware. Следит за выбранным WireGuard-интерфейсом на роутере и перезапускает его, если `rxbytes == 0`, а `txbytes` уже выше порога.
 
-`wg-watchdog` - локальный `opkg`-пакет для Keenetic с Entware. Он следит за
-выбранным WireGuard-интерфейсом прямо на роутере и перезапускает его, если
-входящий трафик не идет, а исходящий уже есть.
+## Возможности
 
-Проект полностью локальный:
+- локальный веб-интерфейс;
+- выбор WireGuard-интерфейса;
+- настройка `RX_THRESHOLD`, `TX_THRESHOLD`, `POLL_INTERVAL`, `COOLDOWN`;
+- задержка старта после загрузки роутера;
+- автоподъём упавших процессов;
+- без Keenetic API, логина и пароля.
 
-- не использует Keenetic HTTP API;
-- не требует логина и пароля;
-- читает статистику из `/sys/class/net`;
-- поднимает простой веб-интерфейс через `busybox httpd`.
-- запускается как сервис и сам поднимает упавшие процессы обратно;
-- умеет подождать после boot, чтобы роутер успел поднять сеть.
-
-## Как работает
-
-Пакет проверяет интерфейс и делает `down -> up`, если выполняются оба условия:
-
-- `rxbytes == 0`
-- `txbytes > TX_THRESHOLD`
-
-По умолчанию:
-
-- `RX_THRESHOLD=0`
-- `TX_THRESHOLD=1024`
-
-Сервисный слой:
-
-- `BOOT_DELAY` - пауза перед стартом после загрузки роутера;
-- `RESTART_DELAY` - пауза перед повторным запуском упавшего процесса.
-
-## Установка
-
-### Entware / Keenetic
-
-Самый простой способ добавить репозиторий:
+## Установка через репозиторий
 
 ```sh
 wget -qO- https://genomxxx.github.io/AutoWG/opkg/add_repo.sh | sh
-```
-
-Затем выполните:
-
-```sh
 opkg update
 opkg install wg-watchdog
 ```
 
-Если хочешь добавить feed вручную, используй строку:
+## Ручное добавление feed
 
 ```sh
 src/gz AutoWG https://genomxxx.github.io/AutoWG/opkg
 ```
 
-После этого:
+## Запуск
 
 ```sh
-opkg update
-opkg install wg-watchdog
 /opt/etc/init.d/S99wg-watchdog start
 ```
 
-Веб-панель:
+## Веб-интерфейс
 
 ```text
 http://<IP роутера>:18088
 ```
 
-## Сборка
+## Что внутри репозитория
 
-Собрать пакет локально:
-
-```sh
-python build_ipk.py
-```
-
-Итоговый файл:
-
-```text
-wg-watchdog_1.0.0_all.ipk
-```
-
-## Что внутри
-
-- `CONTROL/` - метаданные `opkg`
-- `opt/bin/wg-watchdogd` - daemon
-- `opt/etc/init.d/S99wg-watchdog` - автозапуск
-- `opt/share/wg-watchdog/www` - веб-интерфейс и CGI
-
-## Поддержка
-
-Если нужно, можно следующим шагом добавить:
-
-- сборку релизов через GitHub Actions;
-- автопубликацию `.ipk` в Releases;
-- страницу с короткой установкой в стиле публичного проекта.
+- `docs/opkg/add_repo.sh` - one-line installer для Entware;
+- `docs/opkg/Packages` и `Packages.gz` - feed;
+- `docs/opkg/wg-watchdog_1.0.0_all.ipk` - пакет;
+- `opt/` - файлы самого пакета;
+- `CONTROL/` - метаданные `opkg`.
