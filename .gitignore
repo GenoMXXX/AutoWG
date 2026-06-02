@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.ipk
+*.log
+*.tmp
+*.bak
+*.swp
+.DS_Store
+dist/
+build/
+
