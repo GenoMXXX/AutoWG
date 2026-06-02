@@ -19,12 +19,6 @@ opkg update
 opkg install wg-watchdog
 ```
 
-## Ручное добавление feed
-
-```sh
-src/gz AutoWG https://genomxxx.github.io/AutoWG/opkg
-```
-
 ## Запуск
 
 ```sh
