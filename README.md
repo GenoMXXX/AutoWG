@@ -36,13 +36,13 @@
 
 ### Entware / Keenetic
 
-Добавьте feed в `/opt/etc/opkg.conf`:
+Добавьте ровно эту строку в `/opt/etc/opkg.conf`:
 
 ```sh
-src/gz AutoWG https://GenoMXXX.github.io/AutoWG/opkg
+src/gz AutoWG https://genomxxx.github.io/AutoWG/opkg
 ```
 
-Затем:
+Затем выполните:
 
 ```sh
 opkg update
