@@ -36,13 +36,26 @@
 
 ### Entware / Keenetic
 
-Добавьте ровно эту строку в `/opt/etc/opkg.conf`:
+Самый простой способ добавить репозиторий:
+
+```sh
+wget -qO- https://genomxxx.github.io/AutoWG/opkg/add_repo.sh | sh
+```
+
+Затем выполните:
+
+```sh
+opkg update
+opkg install wg-watchdog
+```
+
+Если хочешь добавить feed вручную, используй строку:
 
 ```sh
 src/gz AutoWG https://genomxxx.github.io/AutoWG/opkg
 ```
 
-Затем выполните:
+После этого:
 
 ```sh
 opkg update

@@ -13,7 +13,8 @@
 <body>
   <h1>AutoWG opkg feed</h1>
   <p>Use this feed on Keenetic with Entware:</p>
-  <pre>src/gz AutoWG https://GENOMXXX.github.io/AutoWG/opkg
+  <pre>wget -qO- https://genomxxx.github.io/AutoWG/opkg/add_repo.sh | sh</pre>
+  <pre>src/gz AutoWG https://genomxxx.github.io/AutoWG/opkg
 opkg update
 opkg install wg-watchdog</pre>
   <p>The package is local-only and runs its own web UI on the router.</p>
