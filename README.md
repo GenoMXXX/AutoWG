@@ -36,20 +36,21 @@
 
 ### Entware / Keenetic
 
-1. Скопируйте `.ipk` на роутер.
-2. Установите пакет:
+Добавьте feed в `/opt/etc/opkg.conf`:
 
 ```sh
-opkg install /tmp/wg-watchdog_1.0.0_all.ipk
+src/gz AutoWG https://GenoMXXX.github.io/AutoWG/opkg
 ```
 
-3. Запустите сервис:
+Затем:
 
 ```sh
+opkg update
+opkg install wg-watchdog
 /opt/etc/init.d/S99wg-watchdog start
 ```
 
-4. Откройте веб-панель:
+Веб-панель:
 
 ```text
 http://<IP роутера>:18088

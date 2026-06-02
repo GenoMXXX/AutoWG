@@ -1,0 +1,17 @@
+Package: wg-watchdog
+Version: 1.0.0
+Architecture: all
+Maintainer: Codex
+License: MIT
+Section: net
+Priority: optional
+Depends: busybox, ip-full
+Source: local
+Filename: wg-watchdog_1.0.0_all.ipk
+Size: 8128
+SHA256sum: 666e2701fc0bfb7218f53dccc568168d413ec0842860f8c5deb81c1a4fa5b6f0
+Description: Keenetic WireGuard watchdog with local web UI
+ Monitors a selected Linux WireGuard interface from sysfs and bounces it when
+ rxbytes stays at zero while txbytes exceeds the configured threshold. Includes
+ a local web UI served from Entware, automatic service supervision, and a CGI
+ API for status and configuration.
