@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 *.ipk
+!docs/opkg/*.ipk
 *.log
 *.tmp
 *.bak
@@ -8,4 +9,3 @@ __pycache__/
 .DS_Store
 dist/
 build/
-
